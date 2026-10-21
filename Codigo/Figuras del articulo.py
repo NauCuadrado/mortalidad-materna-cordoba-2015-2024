@@ -88,7 +88,7 @@ fig.text(0.012,0.004,SRC,fontsize=7.2,color='#777777')
 fig.tight_layout(rect=[0,0.05,1,1]); save(fig,'Figure 1 annual ratio')
 
 # --------------------------------------------------- Fig 3 causas
-E=pd.read_csv(_d('Causas de las 162 muertes.csv')); E['tipo']=np.where(E.grupo=='Indirect causes','Indirect','Direct')
+E=pd.read_csv(_d('Causas de las 162 muertes.csv')); E['tipo']=np.where(E.grupo=='Indirect causes','Indirect',np.where(E.grupo=='Undetermined causes','Undetermined','Direct'))
 B=R.set_index('anio').b_cor; yl=list(range(2015,2025))
 dirs=[((E.tipo=='Direct')&(E.anio==y)).sum() for y in yl]; inds=[((E.tipo=='Indirect')&(E.anio==y)).sum() for y in yl]
 rd=[d/B[y]*1e5 for d,y in zip(dirs,yl)]; ri=[i/B[y]*1e5 for i,y in zip(inds,yl)]
