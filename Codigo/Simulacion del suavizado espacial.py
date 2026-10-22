@@ -21,7 +21,7 @@ DATA = os.path.join(BASE, 'Datos derivados')
 OUT = os.path.join(BASE, 'Salidas')
 
 M = pd.read_csv(os.path.join(DATA, 'Base municipal con suavizado y LISA.csv'))
-g = gpd.read_file(os.path.join(DATA, 'municipios de Cordoba.geojson'))
+g = gpd.read_file(os.path.join(DATA, 'cordoba_municipios.geojson'))
 g['cod'] = g['cod'].astype(str)
 M['cod_municipio'] = M.cod_municipio.astype(str)
 gdf = (g.merge(M, left_on='cod', right_on='cod_municipio', suffixes=('_geo', ''))

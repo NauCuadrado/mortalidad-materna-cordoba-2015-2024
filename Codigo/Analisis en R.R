@@ -195,7 +195,7 @@ for (g in sort(unique(C$grupo))) {
 cat("\n== 7. ESPACIAL Y ECOLOGICO ==\n")
 if (requireNamespace("sf", quietly = TRUE) && requireNamespace("spdep", quietly = TRUE)) {
   sf::sf_use_s2(FALSE)
-  gj <- sf::st_read(file.path(datos, "municipios de Cordoba.geojson"), quiet = TRUE)
+  gj <- sf::st_read(file.path(datos, "cordoba_municipios.geojson"), quiet = TRUE)
   gj$cod <- as.character(gj$cod)
   gdf <- merge(gj, transform(M, cod_municipio = as.character(cod_municipio)),
                by.x = "cod", by.y = "cod_municipio")

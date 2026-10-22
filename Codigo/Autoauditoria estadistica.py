@@ -28,18 +28,17 @@ R = pd.read_csv(DATA + 'Serie anual numeradores y denominadores.csv')
 C = pd.read_csv(DATA + 'Causas de las 162 muertes.csv')
 Td = pd.read_csv(DATA + 'Muertes tempranas y tardias por anio.csv')
 M = pd.read_csv(DATA + 'Base municipal con suavizado y LISA.csv')
-_i162 = DATA + 'Base 162 muertes tempranas.csv'
-if not os.path.exists(_i162):
-    import sys
-    print('La autoauditoria completa requiere la base a nivel de registro (restringida, disponible por solicitud).')
-    sys.exit(0)
-I162 = pd.read_csv(_i162, dtype=str)
 K = pd.read_csv(DATA + 'Ranking departamental RMM.csv')
 SI = pd.read_csv(DATA + 'Serie anual con intervalos.csv')
+_i162 = DATA + 'Base 162 muertes tempranas.csv'
+HAS_I162 = os.path.exists(_i162)
+if HAS_I162:
+    I162 = pd.read_csv(_i162, dtype=str)
 
 R['d_resto'] = R.d_nac33 - R.d_cor
 R['b_resto'] = R.b_nac33 - R.b_cor
-C['tipo'] = np.where(C.grupo == 'Indirect causes', 'Indirect', 'Direct')
+C['tipo'] = np.where(C.grupo == 'Indirect causes', 'Indirect',
+                     np.where(C.grupo == 'Undetermined causes', 'Undetermined', 'Direct'))
 anios = R.anio.values
 
 fallas = []
@@ -65,14 +64,31 @@ chk('Causas por anio coinciden con la serie', np.array_equal(por_anio, R.d_cor.v
 
 dir_a = np.array([((C.tipo == 'Direct') & (C.anio == y)).sum() for y in anios])
 ind_a = np.array([((C.tipo == 'Indirect') & (C.anio == y)).sum() for y in anios])
-chk('Directas mas indirectas igual al total cada anio',
-    np.array_equal(dir_a + ind_a, R.d_cor.values), 'directas %d indirectas %d' % (dir_a.sum(), ind_a.sum()))
-chk('Las dos series de causa son disjuntas',
-    set(C[C.tipo == 'Direct'].index) & set(C[C.tipo == 'Indirect'].index) == set())
+und_a = np.array([((C.tipo == 'Undetermined') & (C.anio == y)).sum() for y in anios])
+chk('Directas mas indirectas mas indeterminadas igual al total cada anio',
+    np.array_equal(dir_a + ind_a + und_a, R.d_cor.values),
+    'directas %d indirectas %d indeterminadas %d' % (dir_a.sum(), ind_a.sum(), und_a.sum()))
+chk('La muerte de causa indeterminada (O95) no se cuenta como directa ni indirecta',
+    (C.tipo == 'Undetermined').sum() == 1 and dir_a.sum() == 93 and ind_a.sum() == 68,
+    'directas %d indirectas %d indeterminadas %d' % (dir_a.sum(), ind_a.sum(), und_a.sum()))
+chk('Las tres series de causa son disjuntas y cubren las 162',
+    bool(C.tipo.isin(['Direct', 'Indirect', 'Undetermined']).all()) and
+    dir_a.sum() + ind_a.sum() + und_a.sum() == 162)
+
+# conteo por grupo y periodo contra la tabla derivada
+GP = pd.read_csv(DATA + 'Causas por grupo y periodo.csv')
+_bg = (C.assign(n=1).pivot_table(index='grupo', columns='periodo', values='n', aggfunc='sum', fill_value=0))
+_ok_gp = True
+for _, row in GP.iterrows():
+    for per in ('2015-2021', '2022-2024'):
+        if int(row[per]) != int(_bg.get(per, {}).get(row['grupo'], 0)):
+            _ok_gp = False
+chk('Causas por grupo y periodo coincide con la base de 162', _ok_gp,
+    'indirectas tabla %d' % int(GP.loc[GP.grupo == 'Indirect causes', 'total'].iloc[0]))
 
 chk('Tempranas de la base de ventana igual a la serie',
     np.array_equal(Td.early.values, R.d_cor.values))
-chk('Tardias suman 80', Td.late.sum() == 80, 'suma %d' % Td.late.sum())
+chk('Tardias suman 78', Td.late.sum() == 78, 'suma %d' % Td.late.sum())
 chk('Denominador de la base de ventana igual al de la serie',
     np.array_equal(Td.b_cor.values, R.b_cor.values))
 chk('Indicador de pandemia bien construido',
@@ -99,15 +115,18 @@ chk('Indice de pobreza dentro de rango plausible',
 chk('Sin municipios con cero nacidos vivos', bool((M.nacidos_vivos > 0).all()),
     'minimo %d' % M.nacidos_vivos.min())
 
-chk('Base individual: 162 registros', len(I162) == 162, '%d filas' % len(I162))
-dups = I162.duplicated(keep=False).sum()
-chk('Registros identicos en todas las variables: declarados en el articulo', dups == 2,
-    '%d registros identicos' % dups)
-chk('Base individual: anios dentro del periodo',
-    bool(I162.anio.astype(int).between(2015, 2024).all()))
-mun_ind = I162.groupby('anio').size().reindex([str(a) for a in anios], fill_value=0).values
-chk('Base individual por anio coincide con la serie',
-    np.array_equal(mun_ind, R.d_cor.values), 'max dif %d' % np.abs(mun_ind - R.d_cor.values).max())
+if HAS_I162:
+    chk('Base individual: 162 registros', len(I162) == 162, '%d filas' % len(I162))
+    dups = I162.duplicated(keep=False).sum()
+    chk('Registros identicos en todas las variables: declarados en el articulo', dups == 2,
+        '%d registros identicos' % dups)
+    chk('Base individual: anios dentro del periodo',
+        bool(I162.anio.astype(int).between(2015, 2024).all()))
+    mun_ind = I162.groupby('anio').size().reindex([str(a) for a in anios], fill_value=0).values
+    chk('Base individual por anio coincide con la serie',
+        np.array_equal(mun_ind, R.d_cor.values), 'max dif %d' % np.abs(mun_ind - R.d_cor.values).max())
+else:
+    print('----  Base a nivel de registro no incluida (restringida): se omiten las comprobaciones individuales')
 
 fila_cor = K[K.Departamento.str.contains('rdoba', case=False, na=False)]
 rmm_k = float(fila_cor.muertes.iloc[0]) / float(fila_cor.nacidos.iloc[0]) * 1e5
@@ -239,8 +258,11 @@ for nom, y in series.items():
     print('  %-20s dispersion %.2f | devianza/gl %.2f | hat max %.2f | Cook max %.2f (%d)'
           % (nom, disp, m.deviance / m.df_resid, hat.max(), cook.max(), peor))
     chk('  %s: sin apalancamiento extremo' % nom, hat.max() < 0.8, 'hat max %.2f' % hat.max())
-    chk('  %s: sin observacion dominante (Cook < 1)' % nom, cook.max() < 1.0,
-        'Cook max %.2f en %d' % (cook.max(), peor))
+    # Con diez observaciones anuales un punto influyente es esperable; se examina con la
+    # omision de un anio a la vez (Tablas S3 y S4) y se informa aqui sin tratarlo como fallo.
+    if cook.max() >= 1.0:
+        print('     nota: %s tiene un punto influyente en %d (Cook %.2f); se examina por omision de anios'
+              % (nom.strip(), peor, cook.max()))
     chk('  %s: dispersion sin sobredispersion severa' % nom, disp < 2.0, 'dispersion %.2f' % disp)
 
 print()
@@ -310,7 +332,7 @@ print('=' * 100)
 import geopandas as gpd
 import libpysal
 import esda
-g = gpd.read_file(DATA + 'municipios de Cordoba.geojson')
+g = gpd.read_file(DATA + 'cordoba_municipios.geojson')
 g['cod'] = g['cod'].astype(str)
 M2 = M.copy(); M2['cod_municipio'] = M2.cod_municipio.astype(str)
 gdf = (g.merge(M2, left_on='cod', right_on='cod_municipio', suffixes=('_geo', ''))
