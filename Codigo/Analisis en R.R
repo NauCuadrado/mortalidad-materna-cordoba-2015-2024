@@ -14,7 +14,8 @@ M  <- read.csv(file.path(datos, "Base municipal con suavizado y LISA.csv"))
 
 R$d_resto <- R$d_nac33 - R$d_cor
 R$b_resto <- R$b_nac33 - R$b_cor
-C$tipo <- ifelse(C$grupo == "Indirect causes", "Indirect", "Direct")
+C$tipo <- ifelse(C$grupo == "Indirect causes", "Indirect",
+                 ifelse(C$grupo == "Undetermined causes", "Undetermined", "Direct"))
 
 anios <- R$anio
 nv    <- R$b_cor
