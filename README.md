@@ -10,7 +10,8 @@ Las fuentes primarias son públicas y oficiales: las estadísticas vitales del D
 
 - `Codigo/` — scripts de análisis y de figuras.
 - `Datos derivados/` — bases agregadas (CSV) y la geometría municipal (GeoJSON).
-- `Figuras/` — figuras del cuerpo del artículo y del material suplementario (PDF y PNG).
+- `Figuras/` — figuras del cuerpo (Figure 1, Figure 2) y suplementarias (Figure S1 a S5), en PDF y PNG, con sus leyendas en `Figuras/Leyendas.md`.
+- `Material suplementario.pdf` — tablas suplementarias S1 a S14 con sus leyendas.
 - `Salidas/` — resultados que produce el pipeline; se generan al ejecutarlo.
 
 El diccionario de las columnas de cada base está en `DICCIONARIO_variables.md`.

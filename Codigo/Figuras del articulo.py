@@ -62,7 +62,7 @@ step(CA,LV[3],22)
 box(CA,14,'Maternal mortality ratio\n162 / 243 779 live births',bold=True,fc='#EAF1F8')
 ax.text(0.5,7,'Deaths are attributed by department and municipality of residence, consistent with the live-birth denominator. Surveillance notifications are counted\nunder a different case definition and are reported for comparison of totals only. Sources: national vital statistics and national surveillance microdata.',
         fontsize=7.2,color='#666666',va='top')
-save(fig,'Figure S2 record flow')
+save(fig,'Figure S2')
 
 # --------------------------------------------------- Fig 2 razon anual
 T=pd.read_csv(_d('Serie anual con intervalos.csv')); R=pd.read_csv(_d('Serie anual numeradores y denominadores.csv'))
@@ -85,7 +85,7 @@ for s in ('top','right'): ax.spines[s].set_visible(False)
 ax.text(2020.5,152,'Pandemic',ha='center',fontsize=8,color='#777777')
 fig.text(0.012,0.022,'Shaded bands are exact 95% Poisson confidence intervals. Annual counts of deaths in the department are shown above each point.',fontsize=7.2,color='#777777')
 fig.text(0.012,0.004,SRC,fontsize=7.2,color='#777777')
-fig.tight_layout(rect=[0,0.05,1,1]); save(fig,'Figure 1 annual ratio')
+fig.tight_layout(rect=[0,0.05,1,1]); save(fig,'Figure 1')
 
 # --------------------------------------------------- Fig 3 causas
 E=pd.read_csv(_d('Causas de las 162 muertes.csv')); E['tipo']=np.where(E.grupo=='Indirect causes','Indirect',np.where(E.grupo=='Undetermined causes','Undetermined','Direct'))
@@ -120,7 +120,7 @@ ax.set_title('B. Cause-specific rates by period',fontsize=10.5,fontweight='bold'
 ax.grid(axis='x',alpha=0.2,lw=0.6); ax.set_axisbelow(True); ax.legend(fontsize=8.5,frameon=False,loc='lower right')
 for s in ('top','right','left'): ax.spines[s].set_visible(False)
 fig.text(0.012,0.012,'Counts of deaths are shown next to each point in panel A. '+SRC,fontsize=7.2,color='#777777')
-fig.tight_layout(rect=[0,0.035,1,1]); save(fig,'Figure 2 cause groups')
+fig.tight_layout(rect=[0,0.035,1,1]); save(fig,'Figure 2')
 
 # --------------------------------------------------- Fig 4 mapas
 gdf=_gdf()
@@ -136,8 +136,8 @@ cb=fig.colorbar(sm_,ax=axes,orientation='horizontal',fraction=0.045,pad=0.04,asp
 cb.set_label('Maternal mortality ratio per 100 000 live births (same scale in both panels)',fontsize=8.5)
 fig.suptitle('Municipal maternal mortality, Córdoba, 2015 to 2024',fontsize=12,fontweight='bold',color='#000000',x=0.012,ha='left',y=0.97)
 fig.text(0.012,0.015,'Global empirical Bayes smoothing. Crude rates are the input for the spatial autocorrelation tests. '+SRC,fontsize=7.2,color='#777777')
-fig.savefig(OUT+'Figure S3 municipal maps.png',dpi=300,bbox_inches='tight')
-fig.savefig(OUT+'Figure S3 municipal maps.pdf',bbox_inches='tight'); plt.close(fig)
+fig.savefig(OUT+'Figure S3.png',dpi=300,bbox_inches='tight')
+fig.savefig(OUT+'Figure S3.pdf',bbox_inches='tight'); plt.close(fig)
 
 # --------------------------------------------------- Fig 5 funnel
 theta=gdf.muertes_tempranas.sum()/gdf.nacidos_vivos.sum()*1e5
@@ -162,7 +162,7 @@ ax.set_ylim(-12,300); ax.grid(alpha=0.2,lw=0.6); ax.set_axisbelow(True)
 for s in ('top','right'): ax.spines[s].set_visible(False)
 ax.legend(fontsize=8,frameon=False,loc='upper right')
 ax.text(0,-0.165,SRC,transform=ax.transAxes,fontsize=7.2,color='#777777')
-fig.tight_layout(rect=[0,0.035,1,1]); save(fig,'Figure S4 funnel plot')
+fig.tight_layout(rect=[0,0.035,1,1]); save(fig,'Figure S4')
 
 # --------------------------------------------------- Fig 6 flujo
 fig,axes=plt.subplots(1,2,figsize=(11.6,4.8),gridspec_kw={'width_ratios':[1,1.05]})
@@ -196,7 +196,7 @@ for s in ('top','right','left'): ax.spines[s].set_visible(False)
 ax.text(-15.4,max(yin)+0.9,'Occurred in Córdoba, resident elsewhere',fontsize=8.2,color=BLUE,fontweight='bold')
 ax.text(-15.4,min(yout)-0.75,'Resident in Córdoba, occurred elsewhere',fontsize=8.2,color=RED,fontweight='bold')
 fig.text(0.012,0.012,'Deaths are attributed by department of residence throughout the analysis. '+SRC,fontsize=7.2,color='#777777')
-fig.tight_layout(rect=[0,0.07,1,1]); save(fig,'Figure S5 place of occurrence')
+fig.tight_layout(rect=[0,0.07,1,1]); save(fig,'Figure S5')
 # --------------------------------------------------- Fig S1 orden de los territorios
 K = pd.read_csv(_d('Ranking departamental RMM.csv')).sort_values('RMM', ascending=True).reset_index(drop=True)
 lo, hi = [], []
@@ -216,6 +216,6 @@ ax.set_xlim(0, 340); ax.grid(axis='x', alpha=0.2, lw=0.6); ax.set_axisbelow(True
 for s_ in ('top', 'right', 'left'): ax.spines[s_].set_visible(False)
 fig.text(0.012, 0.008, 'Exact Poisson confidence intervals. The department under study is highlighted. ' + SRC,
          fontsize=7.2, color='#777777')
-fig.tight_layout(rect=[0, 0.025, 1, 1]); save(fig, 'Figure S1 territorial ranking')
+fig.tight_layout(rect=[0, 0.025, 1, 1]); save(fig, 'Figure S1')
 
 print('figuras listas')
