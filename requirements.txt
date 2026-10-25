@@ -1,0 +1,9 @@
+numpy
+pandas
+scipy
+statsmodels
+geopandas
+libpysal
+esda
+shapely
+matplotlib
